@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nosso site</title>
+<style>
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    font-family:system-ui,sans-serif;background:#111417;color:#f1f3f5;text-align:center}
+  .card{background:#1c2025;border-radius:24px;padding:32px 24px;max-width:420px;margin:16px}
+  button{background:#6aa8ff;color:#0b1220;border:0;border-radius:999px;padding:14px 24px;font-size:1rem;font-weight:600}
+  p{opacity:.85;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Bem-vindo! 👋</h1>
+  <p id="msg">Toque no botão e permita as notificações para receber seu aviso.</p>
+  <button id="btn">Permitir notificações</button>
+</div>
+<script>
+const TITULO = "Parabéns por Entrar no nosso site";
+const msg = document.getElementById("msg");
+const btn = document.getElementById("btn");
+
+async function notificar() {
+  const reg = await navigator.serviceWorker.register("sw.js");
+  await navigator.serviceWorker.ready;
+  await reg.showNotification(TITULO, {
+    body: "Seja muito bem-vindo!",
+    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23ff6b5e'/%3E%3Ctext x='50' y='68' font-size='55' text-anchor='middle'%3E🎉%3C/text%3E%3C/svg%3E",
+    vibrate: [200, 100, 200]
+  });
+  msg.textContent = "Pronto! Veja a notificação na barra lá em cima 🎉";
+  btn.style.display = "none";
+}
+
+async function iniciar(pedir) {
+  if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+    msg.textContent = "Seu navegador não suporta notificações.";
+    return;
+  }
+  if (Notification.permission === "granted") return notificar();
+  if (Notification.permission === "denied") {
+    msg.textContent = "As notificações estão bloqueadas. Libere nas configurações do site no navegador.";
+    return;
+  }
+  if (pedir) {
+    const p = await Notification.requestPermission();
+    if (p === "granted") notificar();
+  }
+}
+
+btn.addEventListener("click", () => iniciar(true));
+window.addEventListener("load", () => iniciar(false));
+</script>
+</body>
+</html>
